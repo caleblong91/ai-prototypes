@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered IT Help Desk Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .meeder-blue { color: #002D5B; }
+        .meeder-accent { color: #007BFF; }
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #007BFF;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #chat-window {
+            scroll-behavior: smooth;
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
+        <header class="text-center mb-6 relative">
+            <h1 class="text-3xl md:text-4xl font-bold meeder-blue">IT Help Desk Assistant</h1>
+            <p class="text-lg text-gray-600 mt-2">Your instant support for common IT issues, software requests, and more.</p>
+            <button id="info-btn" class="absolute top-0 right-0 bg-gray-200 text-gray-600 rounded-full p-2 hover:bg-gray-300 transition-colors">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Action Buttons -->
+        <div class="mb-4 flex justify-center gap-4">
+            <button id="proactive-btn" class="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition-colors">Simulate Proactive Alert</button>
+            <button id="report-btn" class="bg-purple-600 text-white font-bold py-2 px-4 rounded-md hover:bg-purple-700 transition-colors">Generate IT Support Report</button>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col h-[70vh]">
+            <!-- Chat Window -->
+            <div id="chat-window" class="flex-1 p-6 overflow-y-auto">
+                <!-- Chat messages will be appended here -->
+            </div>
+
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="p-6 pt-0 hidden">
+                <div class="flex items-center">
+                    <div class="spinner"></div>
+                    <p class="ml-3 text-gray-500 text-sm">Assistant is analyzing...</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t bg-gray-50">
+                <div class="flex items-center bg-white border rounded-lg p-2">
+                    <input type="text" id="chat-input" class="flex-1 px-2 border-none focus:ring-0 outline-none" placeholder="Describe your IT issue or make a request...">
+                    <button id="send-btn" class="bg-[#007BFF] text-white rounded-md p-2 hover:bg-blue-700 transition-colors">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="report-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-xl font-bold meeder-blue">IT Support Trend Analysis</h3><button id="close-report-modal-btn" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+            <div id="report-spinner" class="flex items-center justify-center p-16"><div class="spinner"></div><p class="ml-4 text-gray-500">Analyzing support conversations...</p></div>
+            <div id="report-content" class="p-6 overflow-y-auto hidden"></div>
+        </div>
+    </div>
+    
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-xl font-bold meeder-blue">How to Use & Future Vision</h3><button id="close-info-modal-btn" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+            <div class="p-6 overflow-y-auto space-y-8">
+                <div>
+                    <h4 class="text-lg font-bold meeder-blue mb-2">How to Use This Prototype</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li><strong>Chat with the Assistant:</strong> Describe a common IT issue (e.g., "My VPN won't connect") or make a software request (e.g., "I need a license for Adobe Photoshop"). Follow the AI's troubleshooting steps.</li>
+                        <li><strong>Simulate a Proactive Alert:</strong> Click the "Simulate Proactive Alert" button to see how the AI would proactively contact an employee about a detected issue.</li>
+                        <li><strong>Generate a Strategic Report:</strong> After a few interactions, click the "Generate IT Support Report" button to see how the AI analyzes conversation data to provide insights for IT leadership.</li>
+                    </ol>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold meeder-blue mb-2">Future Enhancements: A Strategic Roadmap</h4>
+                    <p class="text-gray-700 mb-4">This prototype is the foundation. Here is how this tool would evolve into a strategic asset for the entire organization:</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Proactive Monitoring Agent:</strong><span class="w-2/3 text-gray-700">Deploy a lightweight, secure agent on endpoint devices to collect system health data (e.g., disk space, CPU usage) and trigger proactive alerts before employees are impacted.</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Automated Workflow Integration:</strong><span class="w-2/3 text-gray-700">Connect the assistant to real IT systems to automatically provision software, grant permissions, and create tickets in platforms like ServiceNow or Jira without human intervention.</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Knowledge Base Improvement Loop:</strong><span class="w-2/3 text-gray-700">The AI would analyze which troubleshooting steps are failing most often and suggest specific improvements or clarifications for the IT team's internal knowledge base articles.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PASTE YOUR API KEY HERE ---
+        const geminiApiKey = "AIzaSyDnyrh8HCg1fOQAm_D4NaZMOclXU8og3zs";
+
+        // --- DOM ELEMENTS ---
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const proactiveBtn = document.getElementById('proactive-btn');
+        const reportBtn = document.getElementById('report-btn');
+        const reportModal = document.getElementById('report-modal');
+        const closeReportModalBtn = document.getElementById('close-report-modal-btn');
+        const infoModal = document.getElementById('info-modal');
+        const infoBtn = document.getElementById('info-btn');
+        const closeInfoModalBtn = document.getElementById('close-info-modal-btn');
+
+        let conversationHistory = [];
+
+        // --- MOCK KNOWLEDGE BASE & POLICIES ---
+        const knowledgeBase = `
+            **IT Knowledge Base Snippets:**
+            - **Issue: VPN Connection Failure:** Solutions involve checking the Cisco AnyConnect app, restarting it, checking the internet, and finally restarting the computer. Escalates to the Network team.
+            - **Issue: Printer Not Working:** Solutions involve checking power and network, selecting the correct printer, and restarting both devices. Escalates to the Help Desk team.
+            - **Issue: Second Monitor Not Detected:** Solutions involve checking cables, using the Windows+P 'Extend' setting, and power cycling the monitor. Escalates to the Help Desk team.
+            - **Issue: Low Disk Space:** Solution is to run the automated disk cleanup script. The user must give permission.
+            
+            **Software & Access Policies:**
+            - **Adobe Photoshop:** Requires manager approval. The AI must state it will send a request to the user's manager. The user's mock manager is 'Jane Doe'.
+            - **'Q3 Marketing' Shared Drive:** Access is pre-approved for anyone with the role 'Marketing'. The current mock user's role is 'Marketing'. The AI can grant this access directly.
+        `;
+
+        // --- INITIALIZATION ---
+        function initialize() {
+            sendBtn.addEventListener('click', handleUserInput);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUserInput(); });
+            proactiveBtn.addEventListener('click', handleProactiveAlert);
+            reportBtn.addEventListener('click', handleReportGeneration);
+            closeReportModalBtn.addEventListener('click', hideReportModal);
+            infoBtn.addEventListener('click', showInfoModal);
+            closeInfoModalBtn.addEventListener('click', hideInfoModal);
+            
+            addMessage('assistant', "Hello! I'm the Meeder IT Help Desk Assistant. You can describe an issue (e.g., 'My VPN is not connecting') or make a request (e.g., 'I need access to Adobe Photoshop').");
+        }
+
+        // --- UI & MESSAGE HANDLING ---
+        function addMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            let formattedMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            messageElement.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`;
+            messageElement.innerHTML = `<div class="${sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} rounded-lg py-2 px-4 max-w-lg">${formattedMessage}</div>`;
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        
+        function showReportModal() {
+            document.getElementById('report-spinner').classList.remove('hidden');
+            document.getElementById('report-content').classList.add('hidden');
+            reportModal.classList.remove('hidden');
+            setTimeout(() => {
+                reportModal.classList.remove('opacity-0');
+                reportModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideReportModal() {
+            reportModal.classList.add('opacity-0');
+            reportModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => reportModal.classList.add('hidden'), 300);
+        }
+        
+        function showInfoModal() {
+            infoModal.classList.remove('hidden');
+            setTimeout(() => {
+                infoModal.classList.remove('opacity-0');
+                infoModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideInfoModal() {
+            infoModal.classList.add('opacity-0');
+            infoModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => infoModal.classList.add('hidden'), 300);
+        }
+
+        // --- CORE LOGIC ---
+        async function handleUserInput() {
+            const userInput = chatInput.value.trim();
+            if (!userInput) return;
+
+            addMessage('user', userInput);
+            conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
+            chatInput.value = '';
+            typingIndicator.classList.remove('hidden');
+
+            const prompt = `
+                You are an AI IT Help Desk Assistant for Meeder Investments. Your goal is to help employees.
+                **Knowledge Base & Policies:**
+                ${knowledgeBase}
+                **Conversation History:**
+                ${JSON.stringify(conversationHistory)}
+                **Your Task:**
+                Based on the user's last message, decide the next step.
+                1.  **Troubleshoot:** If the user has an IT issue, guide them through the steps from the knowledge base.
+                2.  **Handle Requests:** If the user requests software or access, follow the policy. State who you are sending approval requests to.
+                3.  **Escalate:** If troubleshooting fails, you MUST escalate. Respond ONLY with a JSON object: {"escalate": true, "summary": "A brief summary...", "team": "The team to route to..."}.
+                4.  Be friendly, concise, and helpful.
+            `;
+
+            try {
+                const responseText = await callGemini(prompt);
+                if (responseText.trim().startsWith('{"escalate":true')) {
+                    const escalationData = JSON.parse(responseText);
+                    const ticketMessage = `It looks like we couldn't resolve the issue. I've created a support ticket for you.\n\n**Summary:** ${escalationData.summary}\n**Routing to:** ${escalationData.team}\n\nA specialist will reach out to you shortly.`;
+                    addMessage('assistant', ticketMessage);
+                    conversationHistory.push({ role: "model", parts: [{ text: ticketMessage }] });
+                } else {
+                    addMessage('assistant', responseText);
+                    conversationHistory.push({ role: "model", parts: [{ text: responseText }] });
+                }
+            } catch (error) {
+                addMessage('assistant', "I'm having trouble connecting to my knowledge base right now. Please try again in a moment.");
+            } finally {
+                typingIndicator.classList.add('hidden');
+            }
+        }
+        
+        function handleProactiveAlert() {
+            const proactiveMessage = "Hi there! This is your proactive IT Assistant. I've detected that your laptop is running low on disk space, which can cause performance issues. Would you like me to run an automated cleanup script to remove temporary files?";
+            addMessage('assistant', proactiveMessage);
+            conversationHistory.push({ role: "model", parts: [{ text: proactiveMessage }] });
+        }
+        
+        async function handleReportGeneration() {
+            if (conversationHistory.length < 2) {
+                addMessage('assistant', "Please have a few conversations with me first so I can generate a meaningful report.");
+                return;
+            }
+            showReportModal();
+            const reportContent = document.getElementById('report-content');
+            const reportSpinner = document.getElementById('report-spinner');
+            
+            const prompt = `You are a strategic IT analyst. Analyze the following IT support conversation history and generate a concise report for IT leadership. The report should identify:\n1. **Top Issues:** The most frequently reported problems.\n2. **Success Rate:** An estimate of how many issues were resolved without escalation.\n3. **Strategic Recommendations:** Suggest one concrete action IT could take to reduce the ticket volume based on these trends (e.g., update a knowledge base article, send out a company-wide communication).\n\n**Conversation History:**\n${JSON.stringify(conversationHistory)}`;
+            
+            try {
+                const text = await callGemini(prompt);
+                let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                reportContent.innerHTML = `<div class="text-base text-gray-700">${htmlText}</div>`;
+            } catch (error) {
+                reportContent.innerHTML = `<p class="text-red-500">Error generating report. Please try again.</p>`;
+            } finally {
+                reportSpinner.classList.add('hidden');
+                reportContent.classList.remove('hidden');
+            }
+        }
+
+        // --- GENERIC GEMINI API HANDLER ---
+        async function callGemini(prompt, retries = 3, delay = 1000) {
+            if (geminiApiKey === "YOUR_API_KEY_HERE") {
+                return "AI features are disabled. Please add your Gemini API key to the code to enable them.";
+            }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return result.candidates[0].content.parts[0].text.replace(/```json\n?|\n?```/g, '');
+                } else {
+                    throw new Error("Invalid response structure from API.");
+                }
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGemini(prompt, retries - 1, delay * 2);
+                } else {
+                    console.error("Error calling Gemini API:", error);
+                    throw error;
+                }
+            }
+        }
+
+        // --- START THE APP ---
+        initialize();
+    </script>
+</body>
+</html>

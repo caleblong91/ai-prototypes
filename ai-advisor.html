@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Advisor Briefing with Conversational Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .meeder-blue { color: #002D5B; }
+        .meeder-accent { color: #007BFF; }
+        .meeder-gray-text { color: #4B5563; }
+        .briefing-card {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007BFF;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #chat-widget, .modal-overlay {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .chat-spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #007BFF;
+            animation: spin 1s ease infinite;
+        }
+        #chat-window {
+            scroll-behavior: smooth;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+
+        <header class="text-center mb-8 relative">
+            <h1 class="text-3xl md:text-4xl font-bold meeder-blue">Advisor-on-a-Page Generator</h1>
+            <p class="text-lg meeder-gray-text mt-2">Select an advisor to generate a briefing and unlock the AI Assistant.</p>
+            <button id="info-btn" class="absolute top-0 right-0 bg-gray-200 text-gray-600 rounded-full p-2 hover:bg-gray-300 transition-colors">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+            </button>
+        </header>
+
+        <div class="bg-white p-4 rounded-lg shadow-md mb-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <label for="advisor-select" class="font-semibold meeder-blue">Select an Advisor:</label>
+            <select id="advisor-select" class="p-2 border rounded-md w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></select>
+            <button id="generate-btn" class="bg-[#007BFF] text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto">
+                Generate Briefing
+            </button>
+        </div>
+
+        <div id="briefing-output" class="hidden"></div>
+
+    </div>
+
+    <!-- Chat Widget Button -->
+    <button id="chat-toggle-btn" class="fixed bottom-5 right-5 bg-[#002D5B] text-white rounded-full p-4 shadow-lg hover:bg-blue-800 transition-transform transform hover:scale-110">
+        <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.455.09-.934.09-1.425v-2.909c0-.949.769-1.71 1.71-1.71h5.58c.94 0 1.71.76 1.71 1.71v2.909c0 .491.001.97.09 1.425a4.48 4.48 0 00.978 2.025 5.969 5.969 0 01-.474.065 5.972 5.972 0 01-2.555.337c-4.97 0-9-3.694-9-8.25s4.03-8.25 9-8.25 9 3.694 9 8.25z" />
+        </svg>
+    </button>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" class="fixed bottom-24 right-5 w-full max-w-md h-[60vh] bg-white rounded-lg shadow-2xl border flex flex-col transform translate-x-[110%] opacity-0">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
+            <h3 class="font-bold meeder-blue">AI Assistant</h3>
+            <button id="chat-close-btn" class="text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        <div id="chat-window" class="flex-1 p-4 overflow-y-auto"></div>
+        <div id="typing-indicator" class="p-4 pt-0 hidden"><div class="flex items-center"><div class="chat-spinner"></div><p class="ml-3 text-gray-500 text-sm">Assistant is typing...</p></div></div>
+        <div class="p-2 border-t"><div class="flex items-center bg-white border rounded-lg p-1"><input type="text" id="chat-input" class="flex-1 px-2 border-none focus:ring-0 outline-none" placeholder="Ask a follow-up question..."><button id="send-btn" class="bg-[#007BFF] text-white rounded-md p-2 hover:bg-blue-700 transition-colors"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg></button></div></div>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="email-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-xl font-bold meeder-blue">Generated Follow-Up Email</h3><button id="close-email-modal-btn" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+            <div id="email-spinner" class="flex items-center justify-center p-16"><div class="spinner"></div><p class="ml-4 text-gray-500">Drafting email...</p></div>
+            <div id="email-content" class="p-6 overflow-y-auto hidden"></div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end">
+                <button id="copy-email-btn" class="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition-colors flex items-center">
+                    <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.03 1.125 0 1.131.094 1.976 1.057 1.976 2.192V7.5m-9 1.5h9M4.5 9H19.5a2.25 2.25 0 012.25 2.25v4.5a2.25 2.25 0 01-2.25 2.25H4.5A2.25 2.25 0 012.25 15.75v-4.5A2.25 2.25 0 014.5 9z" /></svg>
+                    <span id="copy-email-text">Copy to Clipboard</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-xl font-bold meeder-blue">How to Use & Future Vision</h3><button id="close-info-modal-btn" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+            <div class="p-6 overflow-y-auto space-y-8">
+                <div>
+                    <h4 class="text-lg font-bold meeder-blue mb-2">How to Use This Prototype</h4>
+                    <ol class="list-decimal list-inside space-y-2 meeder-gray-text">
+                        <li><strong>Generate a Briefing:</strong> Select an advisor from the dropdown and click "Generate Briefing" to see their profile and AI-generated talking points.</li>
+                        <li><strong>Open the AI Assistant:</strong> Click the chat icon in the bottom-right corner to open the conversational assistant.</li>
+                        <li><strong>Ask Follow-Up Questions:</strong> With a briefing active, you can ask the assistant to perform tasks. Try these prompts:
+                            <ul class="list-disc list-inside ml-6 mt-1 text-sm">
+                                <li>"Draft a follow-up email for her."</li>
+                                <li>"Summarize the key takeaways."</li>
+                                <li>"What is a likely objection she might have to our ESG fund?"</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold meeder-blue mb-2">Future Enhancements: A Strategic Roadmap</h4>
+                    <p class="meeder-gray-text mb-4">This prototype is the foundation. Here is how this tool would evolve into an indispensable strategic asset:</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Deeper Data Integration:</strong><span class="w-2/3 meeder-gray-text">Connect to a live data warehouse to analyze real-time portfolio holdings, trading activity, and sentiment from meeting transcripts.</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Comparative Analysis:</strong><span class="w-2/3 meeder-gray-text">Enable queries like "Compare Sarah Chen and David Miller" to get AI-driven insights on which advisor represents a better near-term opportunity.</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Proactive Alerts:</strong><span class="w-2/3 meeder-gray-text">Transform the tool from reactive to proactive. Wholesalers would receive alerts when an AI agent detects a trigger event (e.g., a competitor's fund in an advisor's portfolio is downgraded).</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">"Close the Loop" CRM Logging:</strong><span class="w-2/3 meeder-gray-text">Add a "Log to CRM" button that uses AI to generate a perfect, structured summary of the entire interaction, ensuring valuable intelligence is captured consistently.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- MOCK DATA ---
+        const mockAdvisors = {
+            "1": { name: "Sarah Chen", firm: "Innovate Wealth Management", aum: "$150M", lastContact: "2025-07-15", profile: "Focuses on high-net-worth tech executives. Clients are generally younger, growth-oriented, and interested in disruptive technologies. Sarah is known for being data-driven and skeptical of traditional value funds.", recentActivity: "Downloaded Meeder's whitepaper on 'AI in Portfolio Management' last week. Attended our webinar on 'The Future of Tech Investing' last month.", marketNews: "Innovate Wealth Management was recently featured in 'Barron's' for its rapid growth in the Silicon Valley area." },
+            "2": { name: "David Miller", firm: "Bedrock Financial Planners", aum: "$300M", lastContact: "2025-06-22", profile: "Manages portfolios for retirees and pre-retirees. Prioritizes capital preservation, income generation, and low volatility. David is a long-term relationship builder and values trust and consistency.", recentActivity: "Has been consistently allocating to Meeder's Core Bond Fund. Recently opened an inquiry about our dividend-focused equity funds.", marketNews: "Bedrock Financial Planners announced a partnership with a local estate planning law firm to offer integrated services." },
+            "3": { name: "Maria Garcia", firm: "NextGen Investors", aum: "$75M", lastContact: "2025-08-01", profile: "Specializes in ESG (Environmental, Social, and Governance) investing for millennials and Gen Z. Her clients are passionate about impact investing. Maria is looking for funds with strong ESG ratings and a clear, transparent methodology.", recentActivity: "Has not invested with Meeder before. Visited the 'Our Values' page on the Meeder website multiple times. Downloaded the prospectuses for the Global Impact Fund.", marketNews: "NextGen Investors was named 'Most Innovative ESG Firm' by a prominent industry blog." }
+        };
+
+        let currentAdvisor = null;
+        let currentTalkingPoints = "";
+
+        // --- DOM ELEMENTS ---
+        const advisorSelect = document.getElementById('advisor-select');
+        const generateBtn = document.getElementById('generate-btn');
+        const briefingOutput = document.getElementById('briefing-output');
+        const chatToggleBtn = document.getElementById('chat-toggle-btn');
+        const chatWidget = document.getElementById('chat-widget');
+        const chatCloseBtn = document.getElementById('chat-close-btn');
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const emailModal = document.getElementById('email-modal');
+        const closeEmailModalBtn = document.getElementById('close-email-modal-btn');
+        const copyEmailBtn = document.getElementById('copy-email-btn');
+        const copyEmailText = document.getElementById('copy-email-text');
+        const infoModal = document.getElementById('info-modal');
+        const infoBtn = document.getElementById('info-btn');
+        const closeInfoModalBtn = document.getElementById('close-info-modal-btn');
+
+        // --- INITIALIZATION ---
+        function initialize() {
+            for (const id in mockAdvisors) {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = `${mockAdvisors[id].name} - ${mockAdvisors[id].firm}`;
+                advisorSelect.appendChild(option);
+            }
+            generateBtn.addEventListener('click', generateBriefing);
+            chatToggleBtn.addEventListener('click', toggleChat);
+            chatCloseBtn.addEventListener('click', toggleChat);
+            sendBtn.addEventListener('click', handleUserInput);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUserInput(); });
+            closeEmailModalBtn.addEventListener('click', hideEmailModal);
+            copyEmailBtn.addEventListener('click', copyEmailToClipboard);
+            infoBtn.addEventListener('click', showInfoModal);
+            closeInfoModalBtn.addEventListener('click', hideInfoModal);
+            addChatMessage('assistant', "Hello! After you generate a briefing, you can ask me follow-up questions here, like 'draft an email' or 'what is a likely objection?'");
+        }
+
+        // --- UI FUNCTIONS ---
+        function toggleChat() {
+            chatWidget.classList.toggle('translate-x-[110%]');
+            chatWidget.classList.toggle('opacity-0');
+        }
+
+        function addChatMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            let formattedMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            messageElement.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`;
+            messageElement.innerHTML = `<div class="${sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} rounded-lg py-2 px-4 max-w-md">${formattedMessage}</div>`;
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        
+        function showEmailModal() {
+            document.getElementById('email-spinner').classList.remove('hidden');
+            document.getElementById('email-content').classList.add('hidden');
+            emailModal.classList.remove('hidden');
+            setTimeout(() => {
+                emailModal.classList.remove('opacity-0');
+                emailModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideEmailModal() {
+            emailModal.classList.add('opacity-0');
+            emailModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => emailModal.classList.add('hidden'), 300);
+        }
+        
+        function showInfoModal() {
+            infoModal.classList.remove('hidden');
+            setTimeout(() => {
+                infoModal.classList.remove('opacity-0');
+                infoModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideInfoModal() {
+            infoModal.classList.add('opacity-0');
+            infoModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => infoModal.classList.add('hidden'), 300);
+        }
+
+        function copyEmailToClipboard() {
+            const emailText = document.getElementById('email-content').dataset.rawText;
+            if (emailText) {
+                const textarea = document.createElement('textarea');
+                textarea.value = emailText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyEmailText.textContent = 'Copied!';
+                setTimeout(() => { copyEmailText.textContent = 'Copy to Clipboard'; }, 2000);
+            }
+        }
+
+        // --- CORE LOGIC ---
+        async function generateBriefing() {
+            const selectedId = advisorSelect.value;
+            currentAdvisor = mockAdvisors[selectedId];
+            briefingOutput.innerHTML = `<div class="bg-white rounded-lg p-6 md:p-8 briefing-card">
+                <div class="border-b pb-4 mb-6"><h2 class="text-2xl font-bold meeder-blue">${currentAdvisor.name}</h2><p class="text-lg meeder-gray-text">${currentAdvisor.firm}</p></div>
+                <div class="grid md:grid-cols-3 gap-6 mb-6 text-center">
+                    <div><p class="text-sm text-gray-500">AUM with Meeder</p><p class="text-xl font-semibold meeder-blue">${currentAdvisor.aum}</p></div>
+                    <div><p class="text-sm text-gray-500">Last Contact</p><p class="text-xl font-semibold meeder-blue">${currentAdvisor.lastContact}</p></div>
+                    <div><p class="text-sm text-gray-500">Primary Focus</p><p class="text-xl font-semibold meeder-blue">${currentAdvisor.profile.split('.')[0]}</p></div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="meeder-light-bg p-4 rounded-lg"><h3 class="font-bold meeder-blue mb-2">Advisor Profile & Recent Activity</h3><p class="text-sm meeder-gray-text">${currentAdvisor.profile}</p><p class="text-sm meeder-gray-text mt-2"><strong>Activity:</strong> ${currentAdvisor.recentActivity}</p></div>
+                    <div class="meeder-light-bg p-4 rounded-lg"><h3 class="font-bold meeder-blue mb-2">Recent Market News</h3><p class="text-sm meeder-gray-text">${currentAdvisor.marketNews}</p></div>
+                </div>
+                <div class="mt-6"><h3 class="font-bold meeder-blue mb-3 flex items-center"><svg class="h-6 w-6 mr-2 meeder-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>✨ Strategic Talking Points (Powered by Gemini)</h3><div id="spinner-container" class="flex items-center justify-center p-8"><div class="spinner"></div><p class="ml-4 text-gray-500">Generating insights...</p></div><div id="talking-points-content" class="hidden"></div></div></div>`;
+            briefingOutput.classList.remove('hidden');
+            
+            const talkingPointsContent = document.getElementById('talking-points-content');
+            const spinnerContainer = document.getElementById('spinner-container');
+            const prompt = `You are an expert sales strategist for Meeder Investments. Generate three concise, strategic talking points for a Meeder wholesaler to use in their next meeting with this financial advisor:\n- Name: ${currentAdvisor.name}\n- Profile: ${currentAdvisor.profile}\n- Recent Activity: ${currentAdvisor.recentActivity}\n\nEach talking point should have a bolded title and a short paragraph of explanation.`;
+            
+            try {
+                const text = await callGemini(prompt);
+                currentTalkingPoints = text;
+                let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                talkingPointsContent.innerHTML = `<div class="text-sm meeder-gray-text space-y-3">${htmlText}</div>`;
+            } catch (error) {
+                talkingPointsContent.innerHTML = `<p class="text-red-500">Error generating talking points. Please try again.</p>`;
+            } finally {
+                spinnerContainer.classList.add('hidden');
+                talkingPointsContent.classList.remove('hidden');
+            }
+        }
+
+        async function handleUserInput() {
+            const userInput = chatInput.value.trim().toLowerCase();
+            if (!userInput) return;
+
+            addChatMessage('user', chatInput.value);
+            chatInput.value = '';
+            typingIndicator.classList.remove('hidden');
+
+            if (!currentAdvisor) {
+                addChatMessage('assistant', "Please generate a briefing for an advisor first.");
+                typingIndicator.classList.add('hidden');
+                return;
+            }
+
+            const scenarioKeywords = ['what if', 'objection', 'scenario', 'predict', 'what is a likely'];
+
+            if (userInput.includes('email')) {
+                await handleEmailDraft();
+            } else if (scenarioKeywords.some(keyword => userInput.includes(keyword))) {
+                const prompt = `You are an expert sales coach for Meeder Investments. A wholesaler wants you to predict a likely objection from financial advisor ${currentAdvisor.name} regarding a proposal. Based on the advisor's profile, generate one plausible objection they might have. Then, suggest a concise and effective response to that objection.\n\n**Advisor Profile:**\n${currentAdvisor.profile}\n\n**Recent Activity & Talking Points for Context:**\n${currentTalkingPoints}`;
+                const text = await callGemini(prompt);
+                addChatMessage('assistant', text);
+            } else if (userInput.includes('takeaways') || userInput.includes('summarize')) {
+                const prompt = `Summarize the following information about financial advisor ${currentAdvisor.name} into three bullet points. Focus on the most actionable insights for a sales wholesaler.\n\nProfile: ${currentAdvisor.profile}\nRecent Activity: ${currentAdvisor.recentActivity}\nTalking Points:\n${currentTalkingPoints}`;
+                const text = await callGemini(prompt);
+                addChatMessage('assistant', text);
+            } else {
+                const prompt = `You are an AI assistant for a Meeder Investments wholesaler. The wholesaler is currently viewing a briefing for ${currentAdvisor.name}. They have asked the following question: "${userInput}". Based on the advisor's profile and the talking points below, provide a helpful answer.\n\nAdvisor Profile: ${currentAdvisor.profile}\nTalking Points:\n${currentTalkingPoints}`;
+                const text = await callGemini(prompt);
+                addChatMessage('assistant', text);
+            }
+            
+            typingIndicator.classList.add('hidden');
+        }
+
+        async function handleEmailDraft() {
+            addChatMessage('assistant', "Of course. I've drafted a follow-up email for you. You can review it in the pop-up.");
+            showEmailModal();
+            const emailContent = document.getElementById('email-content');
+            const emailSpinner = document.getElementById('email-spinner');
+            const prompt = `You are a helpful assistant for a Meeder Investments wholesaler. Write a professional and concise follow-up email to a financial advisor, ${currentAdvisor.name}, after a productive meeting. The tone should be helpful and forward-looking. The email should briefly reference the key strategic points that were discussed and suggest a clear next step.\n\nKey Talking Points Discussed:\n${currentTalkingPoints}\n\nYour task is to draft the email body. Start with "Hi ${currentAdvisor.name.split(' ')[0]}," and end with "Best regards,". Do not include a subject line.`;
+            
+            try {
+                const text = await callGemini(prompt);
+                let htmlText = text.replace(/\n/g, '<br>');
+                emailContent.innerHTML = `<div class="text-base meeder-gray-text">${htmlText}</div>`;
+                emailContent.dataset.rawText = text; // Store raw text for clipboard
+            } catch (error) {
+                emailContent.innerHTML = `<p class="text-red-500">Error drafting email. Please try again.</p>`;
+            } finally {
+                emailSpinner.classList.add('hidden');
+                emailContent.classList.remove('hidden');
+            }
+        }
+
+        // --- GENERIC GEMINI API HANDLER ---
+        async function callGemini(prompt, retries = 3, delay = 1000) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Invalid response structure from API.");
+                }
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGemini(prompt, retries - 1, delay * 2);
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        // --- START THE APP ---
+        initialize();
+    </script>
+</body>
+</html>

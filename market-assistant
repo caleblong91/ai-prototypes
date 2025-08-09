@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internal Market Analyst Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .meeder-blue { color: #002D5B; }
+        .meeder-accent { color: #007BFF; }
+        .meeder-gray-text { color: #4B5563; }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007BFF;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .highlight-compliance {
+            background-color: #FEF9C3; /* yellow-100 */
+            border-radius: 3px;
+            cursor: help;
+            border-bottom: 2px dotted #F59E0B; /* amber-500 */
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+
+        <header class="text-center mb-8 relative">
+            <h1 class="text-3xl md:text-4xl font-bold meeder-blue">Internal Market Analyst Assistant</h1>
+            <p class="text-lg meeder-gray-text mt-2">Generate, remix, and pre-check content for compliance.</p>
+            <button id="info-btn" class="absolute top-0 right-0 bg-gray-200 text-gray-600 rounded-full p-2 hover:bg-gray-300 transition-colors">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Input Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <label for="prompt-input" class="text-lg font-semibold meeder-blue">1. Enter your content request:</label>
+            <textarea id="prompt-input" rows="4" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="e.g., 'Draft a 200-word market commentary on this week's CPI report...'"></textarea>
+            
+            <div class="mt-4">
+                <p class="text-sm text-gray-500 mb-2">Or, try an example:</p>
+                <div class="flex flex-wrap gap-2">
+                    <button class="example-prompt-btn bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full hover:bg-gray-300 transition-colors">CPI Report Commentary</button>
+                    <button class="example-prompt-btn bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full hover:bg-gray-300 transition-colors">Email on Market Volatility</button>
+                    <button class="example-prompt-btn bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full hover:bg-gray-300 transition-colors">Global Equities Update</button>
+                </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="tone-select" class="text-base font-semibold meeder-blue">2. Select Tone:</label>
+                    <select id="tone-select" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        <option>Cautiously Optimistic</option>
+                        <option>Neutral & Data-Driven</option>
+                        <option>Urgent & Action-Oriented</option>
+                        <option>Reassuring & Calm</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="audience-select" class="text-base font-semibold meeder-blue">3. Select Audience:</label>
+                    <select id="audience-select" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        <option>Financial Advisors</option>
+                        <option>End Clients</option>
+                        <option>Internal Stakeholders</option>
+                    </select>
+                </div>
+                <button id="generate-btn" class="bg-[#007BFF] text-white font-bold py-2.5 px-8 rounded-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 w-full">
+                    Generate Draft
+                </button>
+            </div>
+        </div>
+
+        <!-- Output Section -->
+        <div id="output-container" class="mt-8 hidden">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                <div class="p-4 flex justify-between items-center border-b bg-gray-50 rounded-t-lg">
+                    <h3 class="text-lg font-semibold meeder-blue">Generated Draft</h3>
+                    <button id="copy-btn" class="bg-green-600 text-white text-sm font-bold py-1 px-3 rounded-md hover:bg-green-700 transition-colors flex items-center">
+                        <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.03 1.125 0 1.131.094 1.976 1.057 1.976 2.192V7.5m-9 1.5h9M4.5 9H19.5a2.25 2.25 0 012.25 2.25v4.5a2.25 2.25 0 01-2.25 2.25H4.5A2.25 2.25 0 012.25 15.75v-4.5A2.25 2.25 0 014.5 9z" /></svg>
+                        <span id="copy-text">Copy</span>
+                    </button>
+                </div>
+                <div id="spinner-container" class="flex items-center justify-center p-16">
+                    <div class="spinner"></div>
+                    <p class="ml-4 text-gray-500">Generating content...</p>
+                </div>
+                <div id="output-content" class="p-6 text-base meeder-gray-text leading-relaxed hidden"></div>
+                
+                <!-- Action Buttons -->
+                <div id="action-buttons" class="p-4 border-t bg-gray-50 rounded-b-lg hidden">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h4 class="font-semibold meeder-blue mb-2">Content Remix:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button data-remix="Email" class="remix-btn bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full hover:bg-gray-300">For Email</button>
+                                <button data-remix="Social Media" class="remix-btn bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full hover:bg-gray-300">For Social Media</button>
+                                <button data-remix="Blog Post" class="remix-btn bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded-full hover:bg-gray-300">Expand to Blog Post</button>
+                            </div>
+                        </div>
+                        <div class="md:text-right">
+                             <h4 class="font-semibold meeder-blue mb-2">Risk Management:</h4>
+                            <button id="compliance-btn" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-600 transition-colors">Run Compliance Pre-Check</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-xl font-bold meeder-blue">How to Use & Future Vision</h3><button id="close-info-modal-btn" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+            <div class="p-6 overflow-y-auto space-y-8">
+                <div>
+                    <h4 class="text-lg font-bold meeder-blue mb-2">How to Use This Prototype</h4>
+                    <ol class="list-decimal list-inside space-y-2 meeder-gray-text">
+                        <li><strong>Generate a Draft:</strong> Enter a content request (or use an example), select a tone and audience, and click "Generate Draft."</li>
+                        <li><strong>Remix Content:</strong> Once a draft is created, use the "Content Remix" buttons to instantly reformat the text for different channels like email or social media.</li>
+                        <li><strong>Run Compliance Pre-Check:</strong> Click the "Run Compliance Pre-Check" button. The AI will analyze the text and highlight any potential regulatory issues (e.g., promissory language). Hover over a highlighted phrase to see why it was flagged.</li>
+                    </ol>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold meeder-blue mb-2">Future Enhancements: A Strategic Roadmap</h4>
+                    <p class="meeder-gray-text mb-4">This prototype is the foundation. Here is how this tool would evolve into an indispensable content engine:</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Content Calendar Integration:</strong><span class="w-2/3 meeder-gray-text">Connect to a content calendar to automatically suggest and draft content for upcoming economic events or fund-specific milestones.</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Performance Analytics:</strong><span class="w-2/3 meeder-gray-text">Integrate with email and social media platforms to track the performance of AI-generated content, allowing the model to learn which styles and topics resonate most with our audience.</span></li>
+                        <li class="flex items-start"><strong class="w-1/3 meeder-blue">Multi-Language Support:</strong><span class="w-2/3 meeder-gray-text">Leverage AI to translate and localize high-performing content for different international markets, ensuring a consistent but culturally relevant message.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PASTE YOUR API KEY HERE ---
+        const geminiApiKey = "AIzaSyDnyrh8HCg1fOQAm_D4NaZMOclXU8og3zs";
+
+        // --- DOM ELEMENTS ---
+        const promptInput = document.getElementById('prompt-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const outputContainer = document.getElementById('output-container');
+        const spinnerContainer = document.getElementById('spinner-container');
+        const outputContent = document.getElementById('output-content');
+        const copyBtn = document.getElementById('copy-btn');
+        const copyText = document.getElementById('copy-text');
+        const examplePromptBtns = document.querySelectorAll('.example-prompt-btn');
+        const toneSelect = document.getElementById('tone-select');
+        const audienceSelect = document.getElementById('audience-select');
+        const actionButtons = document.getElementById('action-buttons');
+        const infoModal = document.getElementById('info-modal');
+        const infoBtn = document.getElementById('info-btn');
+        const closeInfoModalBtn = document.getElementById('close-info-modal-btn');
+
+        // --- EXAMPLE PROMPTS ---
+        const examplePrompts = {
+            "CPI Report Commentary": "Draft a 200-word market commentary on this week's CPI report, which came in slightly higher than expected. This fund will guarantee profit.",
+            "Email on Market Volatility": "Write a short, reassuring email draft regarding recent market volatility.",
+            "Global Equities Update": "Provide a brief update on the global equities market for an internal weekly newsletter. Mention the performance of US, European, and Emerging Markets."
+        };
+
+        // --- INITIALIZATION ---
+        function initialize() {
+            generateBtn.addEventListener('click', handleGeneration);
+            copyBtn.addEventListener('click', copyToClipboard);
+            examplePromptBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    promptInput.value = examplePrompts[btn.textContent];
+                });
+            });
+            actionButtons.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remix-btn')) {
+                    handleRemix(e.target.dataset.remix);
+                }
+                if (e.target.id === 'compliance-btn') {
+                    handleComplianceCheck();
+                }
+            });
+            infoBtn.addEventListener('click', showInfoModal);
+            closeInfoModalBtn.addEventListener('click', hideInfoModal);
+        }
+        
+        // --- UI FUNCTIONS ---
+        function showInfoModal() {
+            infoModal.classList.remove('hidden');
+            setTimeout(() => {
+                infoModal.classList.remove('opacity-0');
+                infoModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideInfoModal() {
+            infoModal.classList.add('opacity-0');
+            infoModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => infoModal.classList.add('hidden'), 300);
+        }
+
+        // --- CORE LOGIC ---
+        async function handleGeneration() {
+            const userInput = promptInput.value.trim();
+            if (!userInput) {
+                alert("Please enter a content request.");
+                return;
+            }
+
+            outputContainer.classList.remove('hidden');
+            spinnerContainer.classList.remove('hidden');
+            outputContent.classList.add('hidden');
+            actionButtons.classList.add('hidden');
+
+            const tone = toneSelect.value;
+            const audience = audienceSelect.value;
+
+            const fullPrompt = `You are an expert market analyst and content strategist for Meeder Investments. Your tone should be ${tone} and the content should be tailored for an audience of ${audience}. Your brand voice is professional, data-driven, and focused on long-term value. Based on the following user request, generate a high-quality, well-structured draft.\n\nUSER REQUEST: "${userInput}"`;
+
+            try {
+                const text = await callGemini(fullPrompt);
+                let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                outputContent.innerHTML = htmlText;
+                outputContent.dataset.rawText = text;
+                actionButtons.classList.remove('hidden');
+            } catch (error) {
+                outputContent.innerHTML = `<p class="text-red-500">Error generating content. Please check the API key and try again.</p>`;
+            } finally {
+                spinnerContainer.classList.add('hidden');
+                outputContent.classList.remove('hidden');
+            }
+        }
+
+        async function handleRemix(format) {
+            const originalText = outputContent.dataset.rawText;
+            if (!originalText) return;
+
+            spinnerContainer.classList.remove('hidden');
+            outputContent.classList.add('hidden');
+
+            let prompt = `You are a marketing expert. Take the following text and rewrite it to be a perfect fit for the specified format.\n\nORIGINAL TEXT:\n"${originalText}"\n\n`;
+            if (format === 'Email') {
+                prompt += `FORMAT: A professional email to a client. Include a subject line.`;
+            } else if (format === 'Social Media') {
+                prompt += `FORMAT: A short, engaging social media post (e.g., for LinkedIn). Use hashtags.`;
+            } else if (format === 'Blog Post') {
+                prompt += `FORMAT: Expand this into a short blog post of 3-4 paragraphs. Give it a compelling title.`;
+            }
+
+            try {
+                const text = await callGemini(prompt);
+                let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                outputContent.innerHTML = htmlText;
+                outputContent.dataset.rawText = text;
+            } catch (error) {
+                outputContent.innerHTML = `<p class="text-red-500">Error remixing content. Please try again.</p>`;
+            } finally {
+                spinnerContainer.classList.add('hidden');
+                outputContent.classList.remove('hidden');
+            }
+        }
+
+        async function handleComplianceCheck() {
+            const originalText = outputContent.dataset.rawText;
+            if (!originalText) return;
+
+            spinnerContainer.classList.remove('hidden');
+            outputContent.classList.add('hidden');
+
+            const prompt = `You are an AI compliance officer for a financial services firm. Your task is to analyze the following text for potential compliance violations. Your rules are:\n1. Do not make specific promises of future returns (e.g., "this fund will guarantee profit").\n2. Avoid exaggerated or promissory language (e.g., "the best fund ever," "a surefire way to get rich").\n3. Ensure a disclaimer about past performance not being indicative of future results is present if performance is mentioned.\n\nAnalyze the text below. If you find any potential violations, return ONLY a JSON object with a key "violations" which is an array of objects. Each object must have two keys: "phrase" (the exact problematic phrase) and "reason" (a brief explanation of the compliance issue). If there are no violations, return an empty array.\n\nTEXT:\n"${originalText}"`;
+
+            try {
+                const responseText = await callGemini(prompt);
+                const responseObject = JSON.parse(responseText.replace(/```json\n?|\n?```/g, ''));
+                let htmlText = originalText.replace(/\n/g, '<br>');
+
+                if (responseObject.violations && responseObject.violations.length > 0) {
+                    responseObject.violations.forEach(violation => {
+                        const regex = new RegExp(violation.phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+                        htmlText = htmlText.replace(regex, `<span class="highlight-compliance" title="${violation.reason}">${violation.phrase}</span>`);
+                    });
+                    outputContent.innerHTML = htmlText;
+                    alert(`${responseObject.violations.length} potential compliance issue(s) found. Hover over the highlighted text for details.`);
+                } else {
+                    alert("No potential compliance issues found.");
+                }
+            } catch (error) {
+                alert("Could not perform compliance check. The AI response may have been in an unexpected format.");
+                console.error("Compliance check error:", error);
+            } finally {
+                spinnerContainer.classList.add('hidden');
+                outputContent.classList.remove('hidden');
+            }
+        }
+
+        function copyToClipboard() {
+            const textToCopy = outputContent.dataset.rawText;
+            if (textToCopy) {
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                copyText.textContent = 'Copied!';
+                setTimeout(() => { copyText.textContent = 'Copy'; }, 2000);
+            }
+        }
+
+        // --- GENERIC GEMINI API HANDLER ---
+        async function callGemini(prompt, retries = 3, delay = 1000) {
+            if (geminiApiKey === "YOUR_API_KEY_HERE") {
+                return "AI features are disabled. Please add your Gemini API key to the code to enable them.";
+            }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Invalid response structure from API.");
+                }
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGemini(prompt, retries - 1, delay * 2);
+                } else {
+                    console.error("Error calling Gemini API:", error);
+                    throw error;
+                }
+            }
+        }
+
+        // --- START THE APP ---
+        initialize();
+    </script>
+</body>
+</html>

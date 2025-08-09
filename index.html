@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caleb Long - AI Prototype Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .meeder-blue { color: #002D5B; }
+        .meeder-accent { color: #007BFF; }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold meeder-blue">AI Prototype Portfolio</h1>
+            <p class="text-xl text-gray-600 mt-4">Demonstrating Strategic AI Solutions for Meeder Investments</p>
+            <p class="text-base text-gray-500 mt-2">Prepared by Caleb Long</p>
+        </header>
+
+        <!-- Prototype Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Advisor Assistant Prototype -->
+            <div class="card bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold meeder-blue ml-4">Advisor Assistant</h2>
+                    </div>
+                    <p class="text-gray-600 mt-4">A strategic tool for the sales team that generates on-demand briefings, talking points, and follow-up emails for financial advisors.</p>
+                </div>
+                <div class="mt-auto p-6 bg-gray-50 rounded-b-lg">
+                    <a href="https://caleblong91.github.io/ai-prototypes/ai-advisor.html" target="_blank" class="block text-center bg-[#007BFF] text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
+                        Launch Prototype
+                    </a>
+                </div>
+            </div>
+
+            <!-- Market Analyst Prototype -->
+            <div class="card bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 p-3 rounded-full">
+                             <svg class="h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold meeder-blue ml-4">Market Analyst Assistant</h2>
+                    </div>
+                    <p class="text-gray-600 mt-4">An internal content engine for the marketing team to generate, remix, and pre-check market commentaries for compliance, all in a consistent brand voice.</p>
+                </div>
+                <div class="mt-auto p-6 bg-gray-50 rounded-b-lg">
+                    <a href="https://caleblong91.github.io/ai-prototypes/market-assistant.html" target="_blank" class="block text-center bg-[#007BFF] text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
+                        Launch Prototype
+                    </a>
+                </div>
+            </div>
+
+            <!-- IT Help Desk Prototype -->
+            <div class="card bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="bg-purple-100 p-3 rounded-full">
+                           <svg class="h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold meeder-blue ml-4">IT Help Desk Assistant</h2>
+                    </div>
+                    <p class="text-gray-600 mt-4">A conversational AI to provide instant, 24/7 support for common IT issues, automate software requests, and generate strategic insights for the IT department.</p>
+                </div>
+                <div class="mt-auto p-6 bg-gray-50 rounded-b-lg">
+                    <a href="https://caleblong91.github.io/ai-prototypes/it-helpdesk.html" target="_blank" class="block text-center bg-[#007BFF] text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
+                        Launch Prototype
+                    </a>
+                </div>
+            </div>
+
+            <!-- Document Search Prototype -->
+            <div class="card bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="bg-yellow-100 p-3 rounded-full">
+                           <svg class="h-8 w-8 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" /></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold meeder-blue ml-4">Document Search</h2>
+                    </div>
+                    <p class="text-gray-600 mt-4">An intelligent search tool that allows employees to ask natural language questions and get cited answers from a secure, internal library of documents.</p>
+                </div>
+                <div class="mt-auto p-6 bg-gray-50 rounded-b-lg">
+                    <a href="https://caleblong91.github.io/ai-prototypes/knowledge-base.html" target="_blank" class="block text-center bg-[#007BFF] text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
+                        Launch Prototype
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
